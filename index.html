@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Giooto</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#1a0f0a;--card:#2a1a12;--accent:#ff6b35;--gold:#ffc857;--text:#fff3e6;--muted:#b89a85}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;padding-bottom:120px}
+header{padding:24px 20px 14px;text-align:center;background:radial-gradient(circle at 50% 0,#ff6b3555,transparent 70%);position:relative}
+header h1{font-size:36px;letter-spacing:4px;color:var(--gold)}
+header p{color:var(--muted);margin-top:4px;font-size:13px}
+.pizza{font-size:42px;display:inline-block;animation:spin 8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.info-btn{position:absolute;right:14px;top:14px;background:var(--card);border:0;border-radius:50%;width:40px;height:40px;font-size:18px;color:var(--text)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 12px;position:sticky;top:0;background:var(--bg);z-index:5}
+.tab{flex:none;padding:9px 16px;border-radius:20px;background:var(--card);color:var(--muted);border:0;font-size:14px}
+.tab.on{background:var(--accent);color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 16px}
+.item{background:var(--card);border-radius:18px;padding:16px 12px;text-align:center;animation:pop .35s both;display:flex;flex-direction:column}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.95)}}
+.emo{font-size:50px;transition:transform .2s}
+.item:active .emo{transform:scale(1.25) rotate(-8deg)}
+.item h3{font-size:15px;margin:8px 0 4px}
+.item small{color:var(--muted);font-size:11.5px;line-height:1.3;flex:1}
+.price{color:var(--gold);font-weight:700;font-size:14px;margin-top:6px}
+.ctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px;height:34px}
+.add{background:var(--accent);color:#fff;border:0;border-radius:14px;padding:8px 18px;font-weight:600}
+.pm{width:34px;height:34px;border-radius:50%;border:0;background:#ffffff18;color:var(--text);font-size:20px}
+.q{font-weight:700;min-width:16px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:#1a0f0aee;backdrop-filter:blur(10px);display:none;z-index:6}
+.go{width:100%;border:0;border-radius:16px;padding:15px;background:linear-gradient(90deg,var(--accent),var(--gold));color:#2a1a12;font-weight:800;font-size:16px}
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:20;overflow:auto;padding:16px 16px 40px;display:none}
+.sheet h2{color:var(--gold);margin:6px 0 14px}
+.back{background:var(--card);border:0;color:var(--text);border-radius:12px;padding:8px 14px;margin-bottom:8px}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px;margin:8px 0}
+.seg button{flex:1;border:0;padding:10px;border-radius:11px;background:none;color:var(--muted)}
+.seg button.on{background:var(--accent);color:#fff}
+label{display:block;color:var(--muted);font-size:13px;margin:12px 0 4px}
+input,textarea{width:100%;background:var(--card);border:1px solid #ffffff18;color:var(--text);border-radius:12px;padding:12px;font-size:15px;font-family:inherit}
+.loc{width:100%;margin-top:8px;background:#ffffff14;color:var(--text);border:0;border-radius:12px;padding:11px}
+.row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.sum{background:var(--card);border-radius:16px;padding:12px 14px;margin:14px 0}
+.tot{font-weight:800;color:var(--gold);font-size:17px;border-top:1px solid #ffffff18;margin-top:6px;padding-top:10px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;line-height:1.6}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<header><button class="info-btn" onclick="show('info')">ℹ️</button><div class="pizza">🍕</div><h1 id="title">GIOOTO</h1><p>Mazali lahzalar shu yerda boshlanadi ✨</p></header>
+<div class="tabs" id="tabs"></div>
+<div class="grid" id="grid"><p style="padding:20px;color:var(--muted)">Yuklanmoqda…</p></div>
+<div class="bar" id="bar"><button class="go" id="go" onclick="show('checkout')"></button></div>
+
+<!-- Buyurtma sahifasi -->
+<div class="sheet" id="checkout">
+  <button class="back" onclick="hide('checkout')">← Orqaga</button>
+  <h2>Buyurtmani rasmiylashtirish</h2>
+  <div class="seg" id="typeSeg"><button class="on" data-v="dine">🍴 Zalda</button><button data-v="delivery">🛵 Yetkazib berish</button></div>
+  <label>Telefon raqamingiz</label><input id="phone" type="tel" placeholder="+998 90 123 45 67">
+  <div id="addrBox" style="display:none">
+    <label>Manzil</label><input id="addr" placeholder="Ko'cha, uy, kvartira, mo'ljal">
+    <button class="loc" id="locBtn" onclick="getLoc()">📍 Joylashuvimni aniqlash</button>
+  </div>
+  <label>Izoh (ixtiyoriy)</label><textarea id="note" rows="2" placeholder="Masalan: piyozsiz, achchiqroq"></textarea>
+  <label>To'lov turi</label>
+  <div class="seg" id="paySeg"><button class="on" data-v="cash">💵 Naqd</button><button data-v="card">💳 Karta</button></div>
+  <div class="sum" id="sum"></div>
+  <button class="go" onclick="submitOrder()">✅ Buyurtmani yuborish</button>
+</div>
+
+<!-- Ma'lumot sahifasi -->
+<div class="sheet" id="info">
+  <button class="back" onclick="hide('info')">← Orqaga</button>
+  <h2>Giooto haqida</h2>
+  <div class="card" id="infoCard"></div>
+</div>
+
+<script>
+const tg = window.Telegram.WebApp; tg.ready(); tg.expand();
+let D = null, cat = 'Hammasi', cart = {}, type = 'dine', pay = 'cash', loc = null;
+const fmt = n => n.toString().replace(/\B(?=(\d{3})+$)/g,' ');
+const $ = id => document.getElementById(id);
+
+fetch('menu.php').then(r=>r.json()).then(d=>{
+  D = d; $('title').textContent = d.name.toUpperCase();
+  $('infoCard').innerHTML = `📍 ${d.address}<br>🕒 ${d.hours}<br>📞 <a href="tel:${d.phone.replace(/\s/g,'')}">${d.phone}</a><br>
+    🛵 Yetkazish: ${fmt(d.fee)} so'm (${fmt(d.free)} so'mdan oshsa bepul)<br><br>
+    <a href="#" onclick="tg.openLink('https://maps.google.com/?q=${d.lat},${d.lng}');return false">🗺 Xaritada ochish</a>`;
+  render();
+}).catch(()=>{ $('grid').innerHTML = '<p style="padding:20px">⚠️ Menyu yuklanmadi. menu.php va config.php serverda borligini tekshiring.</p>'; });
+
+function render(){
+  const cats = ['Hammasi', ...new Set(D.items.map(m=>m.c))];
+  $('tabs').innerHTML = cats.map(c=>`<button class="tab ${c===cat?'on':''}" onclick="cat='${c.replace(/'/g,"\\'")}';render()">${c}</button>`).join('');
+  $('grid').innerHTML = D.items.filter(m=>cat==='Hammasi'||m.c===cat).map((m,i)=>{
+    const q = cart[m.id]||0;
+    return `<div class="item" style="animation-delay:${i*40}ms"><div class="emo">${m.e}</div><h3>${m.n}</h3><small>${m.d}</small><div class="price">${fmt(m.p)} so'm</div>
+    <div class="ctl">${q?`<button class="pm" onclick="chg(${m.id},-1)">−</button><span class="q">${q}</span><button class="pm" onclick="chg(${m.id},1)">+</button>`:`<button class="add" onclick="chg(${m.id},1)">Qo'shish</button>`}</div></div>`;
+  }).join('');
+  const sub = subtotal();
+  $('bar').style.display = sub ? 'block' : 'none';
+  $('go').textContent = `🛒 Savat • ${fmt(sub)} so'm`;
+}
+const subtotal = () => D.items.reduce((s,m)=>s+m.p*(cart[m.id]||0),0);
+const feeNow = () => (type==='delivery' && subtotal()<D.free) ? D.fee : 0;
+function chg(id,d){ cart[id]=Math.max(0,(cart[id]||0)+d); if(!cart[id]) delete cart[id]; tg.HapticFeedback.impactOccurred('light'); render(); if($('checkout').style.display==='block') drawSum(); }
+function show(id){ $(id).style.display='block'; if(id==='checkout') drawSum(); }
+function hide(id){ $(id).style.display='none'; }
+function drawSum(){
+  const lines = D.items.filter(m=>cart[m.id]).map(m=>`<div class="row"><span>${m.n} × ${cart[m.id]}</span><span>${fmt(m.p*cart[m.id])}</span></div>`).join('');
+  const fee = feeNow();
+  $('sum').innerHTML = lines + (type==='delivery'?`<div class="row"><span>Yetkazib berish</span><span>${fee?fmt(fee):'bepul 🎉'}</span></div>`:'') + `<div class="row tot"><span>Jami</span><span>${fmt(subtotal()+fee)} so'm</span></div>`;
+}
+function seg(id, cb){ $(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{ $(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); }); }
+seg('typeSeg', v=>{ type=v; $('addrBox').style.display = v==='delivery'?'block':'none'; drawSum(); });
+seg('paySeg', v=>{ pay=v; });
+function getLoc(){
+  if(!navigator.geolocation){ tg.showAlert('Joylashuvni aniqlab bo\'lmadi, manzilni yozing.'); return; }
+  $('locBtn').textContent = '⏳ Aniqlanmoqda…';
+  navigator.geolocation.getCurrentPosition(p=>{ loc={lat:p.coords.latitude,lng:p.coords.longitude}; $('locBtn').textContent='✅ Joylashuv olindi'; tg.HapticFeedback.notificationOccurred('success'); },
+    ()=>{ $('locBtn').textContent='📍 Joylashuvimni aniqlash'; tg.showAlert('Ruxsat berilmadi. Manzilni qo\'lda yozing.'); });
+}
+function submitOrder(){
+  const phone = $('phone').value.trim(), addr = $('addr').value.trim();
+  if(phone.replace(/\D/g,'').length < 9) return tg.showAlert('Telefon raqamni to\'g\'ri kiriting.');
+  if(type==='delivery' && !addr && !loc) return tg.showAlert('Manzil yozing yoki joylashuvni yuboring.');
+  tg.HapticFeedback.notificationOccurred('success');
+  tg.sendData(JSON.stringify({items:cart,type,phone,address:addr,comment:$('note').value.trim(),pay,lat:loc&&loc.lat,lng:loc&&loc.lng}));
+}
+</script>
+</body>
+</html>
