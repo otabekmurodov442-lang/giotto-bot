@@ -4,6 +4,8 @@ define('BOT_TOKEN', getenv('BOT_TOKEN') ?: '');
 define('ADMIN_CHAT_ID', (int)(getenv('ADMIN_CHAT_ID') ?: 0));
 define('SITE_URL', rtrim(getenv('SITE_URL') ?: '', '/'));
 define('SETUP_KEY', getenv('SETUP_KEY') ?: 'maxfiy123');
+define('PAYMENT_TOKEN', getenv('PAYMENT_TOKEN') ?: ''); // Telegram to'lov tokeni (BotFather > Payments). Bo'sh bo'lsa onlayn to'lov o'chiq.
+const CURRENCY = 'UZS';
 
 const RESTO_NAME    = 'Giotto';
 const RESTO_PHONE   = '+998 90 123 45 67';
