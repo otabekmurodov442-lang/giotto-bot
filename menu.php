@@ -15,6 +15,6 @@ $gallery = [];
 foreach (glob(__DIR__ . '/img/gallery*.{jpg,jpeg,png,webp}', GLOB_BRACE) ?: [] as $f) $gallery[] = 'img/' . basename($f) . '?v=' . filemtime($f);
 echo json_encode([
   'name'=>RESTO_NAME,'phone'=>RESTO_PHONE,'address'=>RESTO_ADDRESS,'lat'=>RESTO_LAT,'lng'=>RESTO_LNG,
-  'hours'=>RESTO_HOURS,'fee'=>DELIVERY_FEE,'free'=>FREE_DELIVERY_FROM,'online'=>PAYMENT_TOKEN !== '',
+  'hours'=>RESTO_HOURS,'fee'=>DELIVERY_FEE,'free'=>FREE_DELIVERY_FROM,'online'=>PAYMENT_TOKEN !== '','channel'=>CHANNEL_LINK,
   'logo'=>findImg('logo'),'hero'=>findImg('hero'),'gallery'=>$gallery,'items'=>$items
 ], JSON_UNESCAPED_UNICODE);

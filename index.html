@@ -95,6 +95,13 @@ input,textarea{width:100%;background:var(--surface);border:1px solid var(--line)
   <button class="submit" onclick="submitOrder()">✅ Buyurtmani yuborish</button>
 </div></div>
 
+<div class="sheet" id="lock" style="z-index:50"><div class="wrap" style="text-align:center;padding-top:18vh">
+  <div style="font-size:64px">📢</div><h2>Kanalga a'zo bo'ling</h2>
+  <div class="note" style="margin:8px 0 18px">Menyudan foydalanish uchun avval rasmiy kanalimizga a'zo bo'ling.</div>
+  <button class="submit" id="joinBtn">📢 Kanalga o'tish</button>
+  <button class="back" style="margin-top:12px;width:100%;padding:14px" onclick="checkSub()">✅ Tekshirish</button>
+</div></div>
+
 <div class="sheet" id="info"><div class="wrap">
   <button class="back" onclick="hide('info')">← Orqaga</button>
   <h2 id="infoTitle">Giotto</h2>
@@ -169,13 +176,31 @@ function getLoc(){
   navigator.geolocation.getCurrentPosition(p=>{ loc={lat:p.coords.latitude,lng:p.coords.longitude}; $('locBtn').textContent='✅ Joylashuv olindi'; tg.HapticFeedback.notificationOccurred('success'); },
     ()=>{ $('locBtn').textContent='📍 Joylashuvimni aniqlash'; tg.showAlert("Ruxsat berilmadi. Manzilni qo'lda yozing."); });
 }
+let sending=false;
 function submitOrder(){
+  if(sending) return;
   const phone=$('phone').value.trim(), addr=$('addr').value.trim();
   if(phone.replace(/\D/g,'').length<9) return tg.showAlert("Telefon raqamni to'g'ri kiriting.");
   if(type==='delivery'&&!addr&&!loc) return tg.showAlert("Manzil yozing yoki joylashuvni yuboring.");
-  tg.HapticFeedback.notificationOccurred('success');
-  tg.sendData(JSON.stringify({items:cart,type,phone,address:addr,comment:$('note').value.trim(),pay,lat:loc&&loc.lat,lng:loc&&loc.lng}));
+  const order={items:cart,type,phone,address:addr,comment:$('note').value.trim(),pay,lat:loc&&loc.lat,lng:loc&&loc.lng};
+  if(!tg.initData){ tg.HapticFeedback.notificationOccurred('success'); tg.sendData(JSON.stringify(order)); return; }
+  sending=true; const btn=document.querySelector('.submit'); btn.textContent='⏳ Yuborilmoqda…';
+  fetch('order.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tg.initData,order})})
+    .then(r=>r.json()).then(j=>{
+      if(j.ok){ tg.HapticFeedback.notificationOccurred('success'); tg.showAlert("✅ Buyurtma qabul qilindi! Tasdiq Telegram chatga yuborildi.",()=>tg.close()); }
+      else if(j.error==='subscribe'){ sending=false; btn.textContent='✅ Buyurtmani yuborish'; checkSub(); tg.showAlert("Buyurtma berish uchun avval kanalimizga a'zo bo'ling."); }
+      else throw new Error(j.error||'xato');
+    }).catch(()=>{ sending=false; btn.textContent='✅ Buyurtmani yuborish'; tg.showAlert("Buyurtma yuborilmadi. Birozdan so'ng qayta urinib ko'ring yoki botdagi «🍽 Menyuni ochish» tugmasidan foydalaning."); });
 }
+function checkSub(){
+  if(!tg.initData) return;
+  fetch('check.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initData:tg.initData})})
+    .then(r=>r.json()).then(j=>{
+      if(j.ok&&!j.member){ $('lock').style.display='block'; $('joinBtn').onclick=()=>tg.openTelegramLink(j.link); }
+      else $('lock').style.display='none';
+    }).catch(()=>{});
+}
+checkSub();
 </script>
 </body>
 </html>
